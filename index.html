@@ -29,25 +29,25 @@
           <small>格式化 / 转义</small>
         </span>
       </button>
-      <button class="nav-item is-disabled" type="button" disabled>
+      <button class="nav-item" type="button" data-tool="codec">
         <span class="nav-icon">A</span>
         <span class="nav-text">
           <strong>编码转换</strong>
-          <small>即将上线</small>
+          <small>Base64 / URL / Unicode</small>
         </span>
       </button>
-      <button class="nav-item is-disabled" type="button" disabled>
+      <button class="nav-item" type="button" data-tool="timestamp">
         <span class="nav-icon">#</span>
         <span class="nav-text">
           <strong>时间戳转换</strong>
-          <small>即将上线</small>
+          <small>秒 / 毫秒 / 日期</small>
         </span>
       </button>
     </nav>
 
     <div class="sidebar-foot">
       <span class="dot"></span>
-      v1.0.0 · 数据只留在这台机器上
+      v1.1.0 · 数据只留在这台机器上
     </div>
   </aside>
 
@@ -55,64 +55,145 @@
   <main class="main">
     <header class="topbar">
       <div class="topbar-text">
-        <h1>JSON 处理工具</h1>
-        <p>一次粘贴，三种处理：格式化、压缩转义、去除转义</p>
+        <h1 id="tool-title">JSON 处理工具</h1>
+        <p id="tool-desc">一次粘贴，三种处理：格式化、压缩转义、去除转义</p>
       </div>
       <span class="badge">本地处理 · 无网络请求</span>
     </header>
 
+    <!-- ========== JSON 处理 ========== -->
     <section class="panel" data-panel="json">
       <div class="toolbar">
-        <button class="btn btn-primary" type="button" data-action="format">格式化</button>
-        <button class="btn" type="button" data-action="minify">压缩转义</button>
-        <button class="btn" type="button" data-action="unescape">去除转义</button>
-        <span class="toolbar-hint" id="action-hint">格式化：把 JSON 整理成 2 空格缩进的多行结构</span>
+        <button class="btn btn-primary" type="button" data-json-action="format">格式化</button>
+        <button class="btn" type="button" data-json-action="minify">压缩转义</button>
+        <button class="btn" type="button" data-json-action="unescape">去除转义</button>
+        <span class="toolbar-hint" data-json="hint">格式化：把 JSON 整理成 2 空格缩进的多行结构</span>
       </div>
 
       <div class="workspace">
-        <!-- 输入 -->
-        <section class="pane" id="pane-input">
+        <section class="pane" data-json="pane-input">
           <div class="pane-head">
             <span class="pane-title">输入</span>
             <div class="pane-actions">
-              <button class="link-btn" type="button" id="btn-clear">清空</button>
+              <button class="link-btn" type="button" data-json="clear">清空</button>
             </div>
           </div>
           <div class="editor">
             <div class="gutter"><div class="gutter-inner"></div></div>
             <div class="code-area">
               <pre class="highlight" aria-hidden="true"><code></code></pre>
-              <textarea id="input" wrap="off" spellcheck="false" autocomplete="off"
-                placeholder='粘贴 JSON 或转义字符串…'></textarea>
+              <textarea wrap="off" spellcheck="false" autocomplete="off"
+                placeholder="粘贴 JSON 或转义字符串…"></textarea>
             </div>
           </div>
           <div class="pane-foot">
-            <span class="stat" id="input-stat">0 字符 · 0 行</span>
-            <span class="status" id="input-status"></span>
+            <span class="stat" data-json="input-stat">0 字符 · 0 行</span>
+            <span class="status" data-json="input-status"></span>
           </div>
         </section>
 
-        <!-- 输出 -->
-        <section class="pane" id="pane-output">
+        <section class="pane" data-json="pane-output">
           <div class="pane-head">
             <span class="pane-title">输出</span>
             <div class="pane-actions">
-              <button class="link-btn" type="button" id="btn-use-as-input">用作输入</button>
-              <button class="link-btn" type="button" id="btn-copy">复制</button>
+              <button class="link-btn" type="button" data-json="use-as-input">用作输入</button>
+              <button class="link-btn" type="button" data-json="copy">复制</button>
             </div>
           </div>
           <div class="editor">
             <div class="gutter"><div class="gutter-inner"></div></div>
             <div class="code-area">
               <pre class="highlight" aria-hidden="true"><code></code></pre>
-              <textarea id="output" wrap="off" spellcheck="false" readonly placeholder="处理结果会出现在这里"></textarea>
+              <textarea wrap="off" spellcheck="false" readonly
+                placeholder="处理结果会出现在这里"></textarea>
             </div>
           </div>
           <div class="pane-foot">
-            <span class="stat" id="output-stat">等待处理</span>
-            <span class="status" id="output-status"></span>
+            <span class="stat" data-json="output-stat">等待处理</span>
+            <span class="status" data-json="output-status"></span>
           </div>
         </section>
+      </div>
+    </section>
+
+    <!-- ========== 编码转换 ========== -->
+    <section class="panel" data-panel="codec" hidden>
+      <div class="toolbar">
+        <div class="segmented" data-codec="types">
+          <button class="seg-item is-active" type="button" data-type="base64">Base64</button>
+          <button class="seg-item" type="button" data-type="url">URL</button>
+          <button class="seg-item" type="button" data-type="unicode">Unicode</button>
+        </div>
+        <div class="segmented" data-codec="directions">
+          <button class="seg-item is-active" type="button" data-direction="encode">编码</button>
+          <button class="seg-item" type="button" data-direction="decode">解码</button>
+        </div>
+        <span class="toolbar-hint" data-codec="hint">Base64 编码：按 UTF-8 把文本转成 Base64</span>
+      </div>
+
+      <div class="workspace">
+        <section class="pane" data-codec="pane-input">
+          <div class="pane-head">
+            <span class="pane-title">输入</span>
+            <div class="pane-actions">
+              <button class="link-btn" type="button" data-codec="clear">清空</button>
+            </div>
+          </div>
+          <textarea class="plain-editor" data-codec="input" spellcheck="false"
+            placeholder="粘贴要编码或解码的文本"></textarea>
+          <div class="pane-foot">
+            <span class="stat" data-codec="input-stat">0 字符</span>
+            <span class="status" data-codec="status"></span>
+          </div>
+        </section>
+
+        <section class="pane" data-codec="pane-output">
+          <div class="pane-head">
+            <span class="pane-title">输出</span>
+            <div class="pane-actions">
+              <button class="link-btn" type="button" data-codec="use-as-input">用作输入</button>
+              <button class="link-btn" type="button" data-codec="copy">复制</button>
+            </div>
+          </div>
+          <textarea class="plain-editor" data-codec="output" spellcheck="false" readonly
+            placeholder="处理结果会出现在这里"></textarea>
+          <div class="pane-foot">
+            <span class="stat" data-codec="output-stat">等待处理</span>
+            <span class="status" data-codec="output-status"></span>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <!-- ========== 时间戳转换 ========== -->
+    <section class="panel" data-panel="timestamp" hidden>
+      <div class="ts-now">
+        <div class="ts-now-card">
+          <span class="ts-now-label">当前毫秒时间戳</span>
+          <strong class="ts-now-value" data-ts="now-ms">—</strong>
+          <button class="link-btn" type="button" data-ts="copy-now" data-src="now-ms">复制</button>
+        </div>
+        <div class="ts-now-card">
+          <span class="ts-now-label">当前秒级时间戳</span>
+          <strong class="ts-now-value" data-ts="now-s">—</strong>
+          <button class="link-btn" type="button" data-ts="copy-now" data-src="now-s">复制</button>
+        </div>
+        <div class="ts-now-card">
+          <span class="ts-now-label">当前本地时间</span>
+          <strong class="ts-now-value" data-ts="now-local">—</strong>
+          <button class="link-btn" type="button" data-ts="copy-now" data-src="now-local">复制</button>
+        </div>
+      </div>
+
+      <div class="ts-form">
+        <input class="text-input" data-ts="input" type="text" spellcheck="false" autocomplete="off"
+          placeholder="粘贴时间戳或日期，如 1761658200000 / 2026-10-28 20:30:00" />
+        <button class="btn" type="button" data-ts="fill-now">填入当前时间</button>
+        <button class="btn btn-primary" type="button" data-ts="convert">转换</button>
+      </div>
+
+      <div class="ts-result" data-ts="result">
+        <div class="ts-empty">输入时间戳或日期，结果会在这里展开</div>
       </div>
     </section>
   </main>
@@ -121,6 +202,12 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="js/json-tool.js"></script>
+<script src="js/codec-tool.js"></script>
+<script src="js/timestamp-tool.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/tools/json-panel.js"></script>
+<script src="js/tools/codec-panel.js"></script>
+<script src="js/tools/timestamp-panel.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

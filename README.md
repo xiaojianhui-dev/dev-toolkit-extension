@@ -1,6 +1,6 @@
 # 开发者工具箱 · DevToolkit
 
-一个零依赖的 Chrome 扩展（Manifest V3）。点击工具栏图标打开一个 H5 页面：左侧是功能切换 TAB，右侧是当前功能的操作区。当前内置第一个功能「JSON 处理」，后续小工具往同一个容器里加。
+一个零依赖的 Chrome 扩展（Manifest V3）。点击工具栏图标打开一个 H5 页面：左侧是功能切换 TAB，右侧是当前功能的操作区。当前内置三个功能：JSON 处理、编码转换、时间戳转换，后续小工具往同一个容器里加。
 
 ## 安装
 
@@ -28,37 +28,79 @@
 - **复制 / 清空**：一键复制输出、清空两侧内容
 - **草稿**：输入内容通过 `chrome.storage.local` 防抖保存，关掉标签页再打开会自动恢复
 
+## 编码转换
+
+上方两个分段控件分别选「类型」和「方向」，输入即转，输出栏同步刷新。
+
+| 类型 | 编码 | 解码 |
+| --- | --- | --- |
+| Base64 | 按 UTF-8 编码，中文和 emoji 都不会乱码 | 兼容 URL-safe 的 `-` `_`、自动补 `=`，非法字符和非 UTF-8 字节会明确报错 |
+| URL | 等价 `encodeURIComponent`，适合拼 query / path | 还原 `%XX`，不会把 `+` 当成空格 |
+| Unicode | 非 ASCII 转 `\uXXXX`，ASCII 原样保留 | 支持 `\uXXXX`、`\u{1F600}`、`\xXX` 三种写法 |
+
+## 时间戳转换
+
+一个输入框，双向识别：
+
+- **纯数字** → 按阈值自动区分秒 / 毫秒（`1e11` 是分界），10 位、13 位都直接贴
+- **日期文本** → `2026-10-28`、`2026/10/28 20:30`、`2026-10-28 20:30:00.123` 按本地时区解析
+- 其他交给 `Date.parse`，ISO 8601 之类也能吃
+
+合法输入会展开 8 个视角，每行可单独复制：本地时间、UTC、ISO 8601、秒级、毫秒级、星期、相对现在、本地时区。顶部三张卡片实时显示当前时间的毫秒 / 秒 / 本地时间，可直接复制或「填入当前时间」。
+
+日期解析用正则 + 构造后回读校验，`2026-02-30` 这类不存在的日期会提示校验失败，而不是被静默滚到 3 月。
+
 ## 目录结构
 
 ```
-manifest.json          MV3 配置：action + background service worker + storage 权限
-index.html             单页结构：左侧 TAB、右侧操作区、输入/输出双栏
-css/app.css            样式：侧栏、卡片、深色编辑器、语法着色、响应式
-js/background.js       点击图标在新标签页打开 index.html
-js/json-tool.js        JSON 工具纯函数层：format / minify / minifyEscape / unescape / highlight
-js/main.js             骨架层：编辑器渲染、工具注册与切换、草稿、复制
-icons/                 16 / 48 / 128 图标
-tests/                 核心逻辑自测
+manifest.json           MV3 配置：action + background service worker + storage 权限
+index.html              单页结构：左侧 TAB、三个工具面板
+css/app.css             样式：侧栏、卡片、深色编辑器、语法着色、分段控件、时间戳结果卡片
+js/background.js        点击图标在新标签页打开 index.html
+js/ui.js                通用层：存储、toast、复制、编辑器、草稿、统计文本
+js/json-tool.js         JSON 纯函数：format / minify / minifyEscape / unescape / highlight
+js/codec-tool.js        编码纯函数：Base64 / URL / Unicode 双向转换
+js/timestamp-tool.js    时间戳纯函数：解析、本地/UTC/ISO 格式化、相对时间
+js/tools/json-panel.js      JSON 面板：动作、错误定位、草稿
+js/tools/codec-panel.js     编码面板：类型/方向状态、实时转换
+js/tools/timestamp-panel.js 时间戳面板：当前时间轮询、结果卡片渲染
+js/main.js              骨架层：工具注册表与 TAB 切换
+icons/                  16 / 48 / 128 图标
+tests/                  核心逻辑自测
 ```
 
-工具模块与页面骨架是分开的：`main.js` 只管「有哪些工具、怎么切」，单个工具的逻辑落在自己的 `js/<tool>.js` 里，新工具不会把主文件撞大。
+分四层，互不越界：
+
+1. **纯函数层** `js/<tool>-tool.js`：不含 DOM，Node 里可直接跑测试
+2. **通用层** `js/ui.js`：三个面板共用的编辑器、草稿、复制、toast
+3. **面板层** `js/tools/<tool>-panel.js`：只操作自己那一块 DOM，对外暴露 `init(panel)` 和 `onShow()`
+4. **骨架层** `js/main.js`：一张 `TOOLS` 表 + 切换逻辑，不认识任何具体工具
 
 ## 加一个新工具
 
-1. 在 `index.html` 的 `.nav` 里加一个 `data-tool="xxx"` 的按钮
-2. 在 `.main` 里加一个 `data-panel="xxx"` 的面板
-3. 需要复用编辑器的，直接照抄现有 `.pane` 结构，`main.js` 的 `createEditor` 可以复用
+1. 写 `js/<tool>-tool.js` 纯函数模块
+2. 写 `js/tools/<tool>-panel.js` 面板模块，`init(panel)` 返回 `{ onShow }`
+3. 在 `index.html` 里加 `.nav` 按钮（`data-tool`）、面板（`data-panel`）和两个 `<script>`
+4. 在 `main.js` 的 `TOOLS` 表里加一行
 
-TAB 切换逻辑按 `data-tool` 与 `data-panel` 自动配对了，不用改 JS。
+切换逻辑按 `data-tool` 与 `data-panel` 自动配对，不需要写额外的胶水代码。
 
 ## 数据与隐私
 
-没有网络请求，没有内容脚本，不用任何远程资源。`storage` 权限只用来存本地草稿，按工具分键，命名约定是 `dev-toolkit.draft.<tool>.v1`，JSON 工具当前用 `dev-toolkit.draft.json.v1`。
+没有网络请求，没有内容脚本，不用任何远程资源。`storage` 权限只用来存本地草稿，按工具分键，命名约定是 `dev-toolkit.draft.<tool>.v1`，当前用到 `dev-toolkit.draft.json.v1`、`dev-toolkit.draft.codec.v1`、`dev-toolkit.draft.timestamp.v1`。
+
+直接用浏览器打开 `index.html` 预览时，草稿会降级存到 `localStorage`。
 
 ## 自测
 
 ```bash
 node tests/json-tool.test.js
+node tests/codec-tool.test.js
+node tests/timestamp-tool.test.js
 ```
 
-覆盖格式化、压缩、转义/反转义（含 `\u`、`\\n`）、往返一致性、错误行列定位和高亮转义，共 14 项。
+零依赖，用 `node:assert` 直接跑。共 47 项，覆盖：
+
+- JSON：格式化、压缩、转义/反转义（含 `\u`、`\\n`）、往返一致性、错误行列定位、高亮转义
+- 编码：Base64 中文与 emoji、URL-safe、缺 padding、非法字符、URL 编解码、Unicode 两种写法与非法输入
+- 时间戳：秒/毫秒识别、本地日期解析与非法日期、相对时间分级、ISO 与星期、往返一致
