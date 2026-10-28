@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "开发者工具箱 · DevToolkit",
+  "version": "1.0.0",
+  "description": "浏览器内的 H5 开发者工具箱：JSON 格式化、压缩转义、去除转义，全部本地处理。",
+  "action": {
+    "default_title": "打开开发者工具箱",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "js/background.js"
+  },
+  "permissions": ["storage"],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

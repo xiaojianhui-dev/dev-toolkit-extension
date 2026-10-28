@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>开发者工具箱</title>
+<link rel="icon" href="icons/icon48.png" />
+<link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+<div class="app">
+
+  <!-- 左侧：功能切换 TAB -->
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark">{ }</span>
+      <span class="brand-text">
+        <strong>开发者工具箱</strong>
+        <small>DevToolkit</small>
+      </span>
+    </div>
+
+    <nav class="nav" id="nav">
+      <p class="nav-label">工具</p>
+      <button class="nav-item is-active" type="button" data-tool="json">
+        <span class="nav-icon">{ }</span>
+        <span class="nav-text">
+          <strong>JSON 处理</strong>
+          <small>格式化 / 转义</small>
+        </span>
+      </button>
+      <button class="nav-item is-disabled" type="button" disabled>
+        <span class="nav-icon">A</span>
+        <span class="nav-text">
+          <strong>编码转换</strong>
+          <small>即将上线</small>
+        </span>
+      </button>
+      <button class="nav-item is-disabled" type="button" disabled>
+        <span class="nav-icon">#</span>
+        <span class="nav-text">
+          <strong>时间戳转换</strong>
+          <small>即将上线</small>
+        </span>
+      </button>
+    </nav>
+
+    <div class="sidebar-foot">
+      <span class="dot"></span>
+      v1.0.0 · 数据只留在这台机器上
+    </div>
+  </aside>
+
+  <!-- 右侧：当前功能的操作区 -->
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-text">
+        <h1>JSON 处理工具</h1>
+        <p>一次粘贴，三种处理：格式化、压缩转义、去除转义</p>
+      </div>
+      <span class="badge">本地处理 · 无网络请求</span>
+    </header>
+
+    <section class="panel" data-panel="json">
+      <div class="toolbar">
+        <button class="btn btn-primary" type="button" data-action="format">格式化</button>
+        <button class="btn" type="button" data-action="minify">压缩转义</button>
+        <button class="btn" type="button" data-action="unescape">去除转义</button>
+        <span class="toolbar-hint" id="action-hint">格式化：把 JSON 整理成 2 空格缩进的多行结构</span>
+      </div>
+
+      <div class="workspace">
+        <!-- 输入 -->
+        <section class="pane" id="pane-input">
+          <div class="pane-head">
+            <span class="pane-title">输入</span>
+            <div class="pane-actions">
+              <button class="link-btn" type="button" id="btn-clear">清空</button>
+            </div>
+          </div>
+          <div class="editor">
+            <div class="gutter"><div class="gutter-inner"></div></div>
+            <div class="code-area">
+              <pre class="highlight" aria-hidden="true"><code></code></pre>
+              <textarea id="input" wrap="off" spellcheck="false" autocomplete="off"
+                placeholder='粘贴 JSON 或转义字符串…'></textarea>
+            </div>
+          </div>
+          <div class="pane-foot">
+            <span class="stat" id="input-stat">0 字符 · 0 行</span>
+            <span class="status" id="input-status"></span>
+          </div>
+        </section>
+
+        <!-- 输出 -->
+        <section class="pane" id="pane-output">
+          <div class="pane-head">
+            <span class="pane-title">输出</span>
+            <div class="pane-actions">
+              <button class="link-btn" type="button" id="btn-use-as-input">用作输入</button>
+              <button class="link-btn" type="button" id="btn-copy">复制</button>
+            </div>
+          </div>
+          <div class="editor">
+            <div class="gutter"><div class="gutter-inner"></div></div>
+            <div class="code-area">
+              <pre class="highlight" aria-hidden="true"><code></code></pre>
+              <textarea id="output" wrap="off" spellcheck="false" readonly placeholder="处理结果会出现在这里"></textarea>
+            </div>
+          </div>
+          <div class="pane-foot">
+            <span class="stat" id="output-stat">等待处理</span>
+            <span class="status" id="output-status"></span>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="js/json-tool.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
