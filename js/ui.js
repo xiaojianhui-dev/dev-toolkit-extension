@@ -88,6 +88,16 @@
 
   /* ---------------- 编辑器：行号 + 高亮层 + 透明 textarea ---------------- */
 
+  // 超过这个行数就不再逐行量折行高度，优先保证输入不卡
+  var WRAP_MEASURE_MAX_LINES = 2000;
+
+  function escapeText(text) {
+    return String(text)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
   function createEditor(pane, options) {
     var opts = options || {};
     var highlight = typeof opts.highlight === 'function' ? opts.highlight : null;
@@ -95,6 +105,7 @@
     var maxHighlight = opts.maxHighlight || 200000;
 
     var textarea = pane.querySelector('textarea');
+    var codeArea = pane.querySelector('.code-area');
     var highlightEl = pane.querySelector('.highlight');
     var codeEl = pane.querySelector('.highlight code');
     var gutterInner = pane.querySelector('.gutter-inner');
@@ -102,14 +113,54 @@
     var frame = 0;
     var inputListener = null;
 
+    var wrapOn = false;
+    var measureEl = null;
+    var measured = { value: null, width: 0, heights: null };
+
     function renderGutter() {
       if (!showGutter || !gutterInner) return;
-      var total = textarea.value ? textarea.value.split('\n').length : 1;
+      var value = textarea.value;
+      var lines = value ? value.split('\n') : [''];
+      var heights = wrapOn ? wrapHeights(lines) : null;
       var html = '';
-      for (var i = 1; i <= total; i += 1) {
-        html += '<span class="ln' + (i === errorLine ? ' is-error' : '') + '">' + i + '</span>';
+      for (var i = 0; i < lines.length; i += 1) {
+        var style = heights ? ' style="height:' + heights[i] + 'px"' : '';
+        html += '<span class="ln' + (i + 1 === errorLine ? ' is-error' : '') + '"' + style + '>' +
+          (i + 1) + '</span>';
       }
       gutterInner.innerHTML = html;
+    }
+
+    // 换行后一个逻辑行可能占好几行，行号得跟着变高才能对齐
+    function wrapHeights(lines) {
+      if (lines.length > WRAP_MEASURE_MAX_LINES) return null;
+
+      var width = textarea.clientWidth;
+      if (measured.heights && measured.value === textarea.value && measured.width === width) {
+        return measured.heights;
+      }
+
+      if (!measureEl) {
+        measureEl = document.createElement('div');
+        measureEl.className = 'wrap-measure';
+        measureEl.setAttribute('aria-hidden', 'true');
+        (codeArea || pane).appendChild(measureEl);
+      }
+
+      var html = '';
+      for (var i = 0; i < lines.length; i += 1) {
+        html += '<div>' + escapeText(lines[i]) + '</div>';
+      }
+      measureEl.innerHTML = html;
+
+      var heights = [];
+      var children = measureEl.children;
+      for (var j = 0; j < children.length; j += 1) {
+        heights.push(children[j].offsetHeight || 0);
+      }
+
+      measured = { value: textarea.value, width: width, heights: heights };
+      return heights;
     }
 
     function renderHighlight() {
@@ -172,6 +223,16 @@
         textarea.scrollTop = 0;
         textarea.scrollLeft = 0;
         syncScroll();
+      },
+      // 开关自动换行：textarea 与高亮层一起切，行号改按折行后的高度算
+      setWrap: function (on) {
+        var next = !!on;
+        if (next === wrapOn) return;
+        wrapOn = next;
+        if (codeArea) codeArea.classList.toggle('is-wrap', wrapOn);
+        textarea.setAttribute('wrap', wrapOn ? 'soft' : 'off');
+        measured = { value: null, width: 0, heights: null };
+        refresh();
       },
       refresh: refresh
     };

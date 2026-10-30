@@ -47,7 +47,7 @@
 
     <div class="sidebar-foot">
       <span class="dot"></span>
-      v1.2.0 · 数据只留在这台机器上
+      v1.3.0 · 数据只留在这台机器上
     </div>
   </aside>
 
@@ -77,6 +77,11 @@
         <button class="btn" type="button" data-json-action="minify">压缩转义</button>
         <button class="btn" type="button" data-json-action="unescape">去除转义</button>
         <span class="toolbar-hint" data-json="hint">格式化：把 JSON 整理成 2 空格缩进的多行结构</span>
+        <label class="switch" title="长行折行显示，不用左右拖动">
+          <input class="switch-input" type="checkbox" data-json="wrap" checked />
+          <span class="switch-track"><span class="switch-thumb"></span></span>
+          <span class="switch-text">自动换行</span>
+        </label>
       </div>
 
       <div class="workspace">

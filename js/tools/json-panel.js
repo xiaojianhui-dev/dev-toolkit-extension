@@ -22,6 +22,7 @@
     function el(name) { return panel.querySelector('[data-json="' + name + '"]'); }
 
     var hint = el('hint');
+    var wrapToggle = el('wrap');
     var inputStat = el('input-stat');
     var inputStatus = el('input-status');
     var outputStat = el('output-stat');
@@ -33,11 +34,18 @@
     var currentAction = 'format';
     var draft = UI.createDraft(DRAFT_KEY);
 
+    // 自动换行：两侧编辑器一起切，行号也会跟着折行变高
+    function applyWrap(on) {
+      inputEditor.setWrap(on);
+      outputEditor.setWrap(on);
+    }
+
     draft.bind(function () {
       return {
         input: inputEditor.value(),
         output: outputEditor.value(),
         action: currentAction,
+        wrap: wrapToggle.checked,
         savedAt: Date.now()
       };
     });
@@ -160,13 +168,23 @@
       draft.save();
     });
 
+    wrapToggle.addEventListener('change', function () {
+      applyWrap(wrapToggle.checked);
+      draft.save();
+    });
+
     updateInputStat();
+    applyWrap(wrapToggle.checked);
 
     draft.load().then(function (saved) {
       if (!saved) return;
       if (saved.input) inputEditor.setValue(saved.input);
       if (saved.output) outputEditor.setValue(saved.output);
       if (saved.action && ACTIONS[saved.action]) selectAction(saved.action);
+      if (typeof saved.wrap === 'boolean') {
+        wrapToggle.checked = saved.wrap;
+        applyWrap(saved.wrap);
+      }
       updateInputStat();
       updateOutputStat(outputEditor.value());
     });

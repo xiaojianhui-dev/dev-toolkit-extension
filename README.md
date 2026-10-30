@@ -30,6 +30,7 @@
 其他交互：
 
 - **错误定位**：解析失败时状态栏显示「第 N 行第 M 列」和中文原因，行号标红，点击提示可把光标跳到出错位置
+- **自动换行**：长行默认折行显示，行号跟着折行块变高（后续折行行留空）；工具栏右上角的开关可以关掉，切回左右拖动查看，开关状态随草稿保存
 - **用作输入**：把输出回填到输入框，方便「压缩转义 → 去除转义」这种往返验证
 - **复制 / 清空**：一键复制输出、清空两侧内容
 - **草稿**：输入内容通过 `chrome.storage.local` 防抖保存，关掉标签页再打开会自动恢复
@@ -63,7 +64,7 @@ manifest.json           MV3 配置：action + background service worker + storag
 index.html              单页结构：左侧 TAB、三个工具面板
 css/app.css             样式：侧栏、卡片、深色编辑器、语法着色、分段控件、时间戳结果卡片
 js/background.js        点击图标在新标签页打开 index.html
-js/ui.js                通用层：存储、toast、复制、编辑器、草稿、统计文本
+js/ui.js                通用层：存储、toast、复制、编辑器（含折行测量）、草稿、统计文本
 js/json-tool.js         JSON 纯函数：format / minify / minifyEscape / unescape / highlight
 js/codec-tool.js        编码纯函数：Base64 / URL / Unicode 双向转换
 js/timestamp-tool.js    时间戳纯函数：解析、本地/UTC/ISO 格式化、相对时间
