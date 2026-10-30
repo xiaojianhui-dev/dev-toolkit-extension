@@ -171,13 +171,13 @@
       updateOutputStat(outputEditor.value());
     });
 
-    return {
-      onShow: function () {
-        // 面板高度变化时重新对齐高亮层与行号
-        inputEditor.refresh();
-        outputEditor.refresh();
-      }
-    };
+    function realign() {
+      // 面板尺寸变化时重新对齐高亮层、行号与横向滚动位置
+      inputEditor.refresh();
+      outputEditor.refresh();
+    }
+
+    return { onShow: realign, onResize: realign };
   }
 
   global.JsonPanel = { init: init };

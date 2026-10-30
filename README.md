@@ -11,6 +11,12 @@
 
 > 修改代码后回到扩展管理页点一下刷新按钮即可生效。
 
+## 界面
+
+- **侧栏可收起**：顶栏左侧的箭头把侧栏折成 76px 的图标列，工具照样能切，主区腾出 168px；再点一次展开。状态存在本地，下次打开保持原样
+- **双栏可拖拽**：JSON 和编码面板中间有一条分隔条，拖动改左右宽度，双击回到 50:50；Tab 聚焦后 `←` `→` 每格 2%，`Home` / `End` 一步拉到 20% / 80%。比例全局一份，切 TAB 不会跳
+- 窗口窄于 1120px 时两栏自动上下堆叠并隐藏分隔条，窄于 860px 时侧栏直接进图标列
+
 ## JSON 处理
 
 页面是「输入 / 输出」双栏。输入框实时语法着色，三种动作都只处理当前输入，结果写进右侧输出栏。
@@ -64,7 +70,7 @@ js/timestamp-tool.js    时间戳纯函数：解析、本地/UTC/ISO 格式化�
 js/tools/json-panel.js      JSON 面板：动作、错误定位、草稿
 js/tools/codec-panel.js     编码面板：类型/方向状态、实时转换
 js/tools/timestamp-panel.js 时间戳面板：当前时间轮询、结果卡片渲染
-js/main.js              骨架层：工具注册表与 TAB 切换
+js/main.js              骨架层：工具注册表与 TAB 切换、侧栏折叠与双栏宽度
 icons/                  16 / 48 / 128 图标
 tests/                  核心逻辑自测
 ```
@@ -87,7 +93,7 @@ tests/                  核心逻辑自测
 
 ## 数据与隐私
 
-没有网络请求，没有内容脚本，不用任何远程资源。`storage` 权限只用来存本地草稿，按工具分键，命名约定是 `dev-toolkit.draft.<tool>.v1`，当前用到 `dev-toolkit.draft.json.v1`、`dev-toolkit.draft.codec.v1`、`dev-toolkit.draft.timestamp.v1`。
+没有网络请求，没有内容脚本，不用任何远程资源。`storage` 权限只用来存本地草稿与界面布局，草稿按工具分键，命名约定是 `dev-toolkit.draft.<tool>.v1`，当前用到 `dev-toolkit.draft.json.v1`、`dev-toolkit.draft.codec.v1`、`dev-toolkit.draft.timestamp.v1`；布局存在 `dev-toolkit.ui.layout.v1`，形如 `{ collapsed: false, split: 54 }`。
 
 直接用浏览器打开 `index.html` 预览时，草稿会降级存到 `localStorage`。
 
